@@ -1,0 +1,19 @@
+
+.result-wrapper h4, .result-wrapper li {
+	text-align: left;
+
+}
+.result-wrapper {
+
+}
+
+.result-wrapper .span4, .result-wrapper .span8 {
+background-color: #EEE;
+border-color: #E3E3E3;
+
+}
+
+.result-wrapper .span8 {
+margin-left: 0;
+
+}

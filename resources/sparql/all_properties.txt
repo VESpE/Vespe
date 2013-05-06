@@ -1,0 +1,9 @@
+SELECT DISTINCT ?property
+
+WHERE {
+    
+	?person rdf:type <http://dbpedia.org/ontology/Person> .
+	
+?person ?property ?value .
+
+}

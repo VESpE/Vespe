@@ -1,0 +1,162 @@
+body {
+
+  min-width: 250px;
+  padding-top: 20px;
+
+  #page {
+
+    margin: 5px;
+
+  }
+  .search_field {
+
+    position: relative;
+
+  }
+
+  h2 {
+
+    font-size: 12px;
+    line-height: 1;
+    font-weight: normal;
+
+  }
+
+  #filters li {
+
+    padding: 5px;
+    background-color: #fff;
+    margin-bottom: 3px;
+    line-height: 30px;
+    position: relative;
+
+    .filter_node_delete {
+
+      position: absolute;
+      right: 0px;
+      top: 0px;
+      font-weight: bold;
+
+    }
+
+  }
+
+  .typeahead_container {
+
+	position: relative;
+
+	  .typeahead {
+
+		position: absolute;
+		z-index: 1035;
+		left: 0px;
+		top: 30px;
+
+		ul {
+
+			position: relative;
+			background-color: #fff;
+			margin: 0;
+			list-style-type: none;
+
+			li {
+
+			  margin-left: -19px;
+			  margin-right: -19px;
+			  position: relative;
+
+			  &this:hover {
+				background-color: #eee;
+			  }
+
+			  a {
+
+				display: block;
+				width: 100%;
+				height: 20px;
+				line-height: 20px;
+				padding: 3px 19px;
+				font-size: 14px;
+
+			  }
+
+			}
+
+		}
+
+	}
+
+  }
+
+  .prettyprint {
+    background-color: #fff;
+    ol {
+      margin: 0 0 -19px 40px;
+    }
+    .prettyprint li {
+      padding: 0px;
+      line-height: 0px;
+    }
+  }
+
+  #value_container, #super_container, #sub_container {
+	display: none;
+  }
+  
+  #vespe_logo {
+	cursor: pointer;
+	float: right;
+	width: 266px;
+	height: 200px;
+    margin-top: -30px;
+	
+	img {
+	  cursor: pointer;
+	  width: 266px;
+	  height: 200px;
+	}
+  }
+  .overflow-hidden {
+	overflow: hidden;
+  }
+  #starttype_container {
+	display: none;
+  }
+  #properties_container {
+	display: none;
+  }
+.prop_wrapper {
+	width: 75%;
+	position: relative;
+	left: 10px;
+}
+.concat {
+	height: 90px;
+	width: 75%;
+}
+  .explore-controls {
+	text-align: right;
+	
+	.btn {
+		margin: 10px;
+	}
+  }
+  #result_wrapper {
+	display: none;
+  }
+  .ajax-loader {
+	width: 32px;
+	height: 32px;
+	background-image: url('../img/ajax-loader.gif');
+  }
+  .word-break {
+	word-break: break-all;
+  }
+  .vespe-tooltip {
+	position: absolute;
+	left: 100%;
+	top: -20px;
+	border: 4px solid rgba(0,0,0,0.59);
+	background-color: rga(255,255,255,0.50);
+  }
+}

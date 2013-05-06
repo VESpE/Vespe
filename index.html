@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="de">
+    
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            VESpE - Visual Explorative Sparql Editor
+        </title>
+        <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+        <link href="css/bootstrap-responsive.css" rel="stylesheet" type="text/css">
+        <link href="css/style.css" rel="stylesheet" type="text/css">
+        <link href="css/result.css" rel="stylesheet" type="text/css">
+        <link href="css/style.less" rel="stylesheet/less" type="text/css">
+
+          <link type="text/css" href="css/treeview.css" rel="stylesheet" />
+        <script type="text/javascript" src="js/less-1.3.0.min.js"></script>
+    </head>
+    
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="span12">
+                    <div class="hero-unit well overflow-hidden">
+                        <div id="vespe_logo">
+                            <img src="img/vespe.png" class="vespe-logo" alt="VESpE">
+                        </div>
+                        <h1>
+                            VESpE
+                        </h1>
+                        <p>
+                            Visual Explorative Sparql Editor
+                        </p>
+                        <p>
+                            <a href="#infoModal" role="button" class="btn btn-primary" data-toggle="modal">More information</a>
+							<!-- Modal -->
+							<div id="infoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+							  <div class="modal-header">
+							    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+							    <h3 id="myModalLabel">VESpE</h3>
+							  </div>
+							  <div class="modal-body">
+							    <p style="font-size: 14px;">VESpE - Visual Explorative SPARQL Editor is a webbased, platform-independent Application which allows the user to interact via all popular webbrowsers with. It provides a user-friendly GUI which supports creation of SPARQL-queries. Even non-techincal users without experience in database- or querylanguages should be able to discover the LinkedOpenData-Cloud.</p>
+							  </div>
+							  <div class="modal-footer">
+							    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+							  </div>
+							</div>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                <div class="well">
+<div class="row">
+                <div class="span6">                    
+                        <form class="form-horizontal" style="margin: 0px;" autocomplete="off">
+                            <label for="source" class="control-label">
+                                <strong>
+                                    Source:
+                                </strong>
+                            </label>
+                            <div id="source_field" class="controls typeahead_container">
+                                <input type="text" class="input" name="source" id="source" placeholder="click to select">
+                                <div id="source_typeahead" class="typeahead">
+                                </div>
+                            </div>
+                        </form>
+                </div>
+<div class="span5"><h4>You have to choose a datasource!</h4><p>Select the datasource you want to explore.</p></div>   
+            </div>
+            </div>
+            </div></div>
+            <div class="row">
+                <div class="span12">
+                    <div class="well">
+
+                    <div class="row">
+
+                <div class="span6"><h3>
+                            Types
+                        </h3>
+                        <hr>
+                        <div id="super_container">
+                            <form class="form-horizontal" style="margin: 0px; width: 100%; display: block;" autocomplete="off">
+								<div class="control-group">
+	                                <label for="super" class="control-label">
+	                                    <strong>
+	                                        Select Superclass:
+	                                    </strong>
+	                                </label>
+	                                <div id="super_field" class="controls typeahead_container">
+	                                    <input type="text" class="input" name="super" id="super" placeholder="click to select">
+	                                    <div id="super_typeahead" class="typeahead">
+	                                    </div>
+	                                </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div>
+                            <form class="form-horizontal" style="margin: 0px; width: 100%; display: block;" autocomplete="off">
+								<div class="control-group">
+	                                <label for="starttype" class="control-label">
+	                                    <strong>
+	                                        Select starttype:
+	                                    </strong>
+	                                </label>
+	                                <div id="starttype_field" class="controls typeahead_container">
+	                                    <input type="text" class="input" name="starttype" id="starttype" placeholder="click to select">
+	                                    <div id="starttype_typeahead" class="typeahead">
+	                                    </div>
+	                                </div>
+								</div>
+                            </form>
+                        </div>
+                        <div id="sub_container">
+                            <form class="form-horizontal" style="margin: 0px; width: 100%; display: block;" autocomplete="off">
+								<div class="control-group">
+	                                <label for="sub" class="control-label">
+	                                    <strong>
+	                                        Select subclass:
+	                                    </strong>
+	                                </label>
+	                                <div id="sub_field" class="controls typeahead_container">
+	                                    <input type="text" class="input" name="sub" id="sub" placeholder="click to select">
+	                                    <div id="sub_typeahead" class="typeahead">
+	                                    </div>
+	                                </div>
+                                </div>
+                            </form>
+                        </div> 
+</div>
+<div class="span5"><h4>Please select the type you want to start to explore the source with.</h4><p>You should choose a general type to be able to discover a lot!</p> </div>
+</div></div></div></div>
+<div class="row">
+    <div class="span12">
+        <div class="well">
+            <div class="row-fluid">
+                <div class="span2">
+					Discover the LOD source with this tree view.
+                </div>
+                <div class="span6">
+                   <div id="center-container">
+                     <div id="infovis"></div>    
+                    </div>
+                </div>
+                <div class="span4">
+                    <div id="properties_container">
+                        <h3>
+                            Properties
+                        </h3>
+                        <hr>
+                        <h5><div id="current_type"></div><small> is current Type</small></h5>
+                        <div class="property_template" style="display: none;">
+                            <div class="well prop_wrapper">
+                                <div>
+                                    <form class="form-horizontal" style="margin: 0px;" autocomplete="off">
+										<div class="control-group">
+	                                        <label for="prop" class="control-label">
+	                                            <strong>
+	                                                Property:
+	                                            </strong>
+	                                        </label>
+	                                        <div class="prop_field typeahead_container">
+	                                            <input id="prop" type="text" class="input prop" name="prop" placeholder="click to select">
+	                                            <div class="prop_typeahead typeahead">
+	                                            </div>
+	                                        </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="value_container">
+                                    <form class="form-horizontal" style="margin: 0px;" autocomplete="off">
+										<div class="control-group">
+	                                        <label for="value" class="control-label">
+	                                            <strong>
+	                                                Value:
+	                                            </strong>
+	                                        </label>
+	                                        <div class="value_field typeahead_container">
+	                                            <input type="text" class="input value" name="value" placeholder="click to select">
+	                                            <div class="value_typeahead typeahead">
+	                                            </div>
+	                                        </div>
+                                        </div>
+                                    </form>
+                                </div>
+								<a href="#" class="specify_prop_button btn btn-success">Specify more!</a>
+                                <a href="#" class="delete_prop_button btn btn-danger">Delete Property</a>
+								
+                            </div>
+                        </div>
+                        <div class="property_forms">
+                        </div>
+                        <a href="#" class="add_prop_button btn btn-success">Add Properties</a>
+                    </div>
+					
+                </div>
+            </div>
+    </div>
+</div>
+<div class="specify_property_template_container hide">
+	<div class="well prop_wrapper">
+	    <div>
+	        <form class="form-horizontal" style="margin: 0px;" autocomplete="off">
+				<div class="control-group">
+		            <label for="prop" class="control-label">
+		                <strong>
+		                    Property:
+		                </strong>
+		            </label>
+		            <div class="prop_field typeahead_container">
+		                <input id="prop" type="text" class="input prop" name="prop" placeholder="click to select">
+		                <div class="prop_typeahead typeahead">
+		                </div>
+		            </div>
+	            </div>
+	        </form>
+	    </div>
+	    <div class="value_container">
+	        <form class="form-horizontal" style="margin: 0px;" autocomplete="off">
+				<div class="control-group">
+		            <label for="value" class="control-label">
+		                <strong>
+		                    Value:
+		                </strong>
+		            </label>
+		            <div class="value_field typeahead_container">
+		                <input type="text" class="input value" name="value" placeholder="click to select">
+		                <div class="value_typeahead typeahead">
+		                </div>
+		            </div>
+	            </div>
+	        </form>
+	    </div>
+		<a href="#" class="specify_prop_button btn btn-success">Specify more!</a>
+	    <a href="#" class="delete_prop_button btn btn-danger">Delete Property</a>
+	</div>
+</div>
+<div class="specify_property_template row hide">
+    <div class="span12 well specification_container">
+		<h3>Specify the property</h3>
+		<div class="row-fluid">
+			<div class="span4 prop_label">
+			</div>
+			<div class="span8">
+				<h3>Property</h3>
+				<div class="specify_property_container property_forms">
+				</div>
+                <a href="#" class="add_specify_prop_button btn btn-success">Add Properties</a>
+        		<a href="#" class="delete_specify_button btn btn-danger">Delete Specification!</a>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="specify_property_containers">
+</div>
+    <div class="row">
+        <div class="span6 offset6 explore-controls">
+            <a href="#" id="explore_button" class="btn btn-inverse">Explore!</a>
+        </div>
+    </div>
+  <div class="row">
+                <div class="span12">
+                    <div class="well" id="result_wrapper">
+                        <h3>
+                            Results
+                        </h3>
+                        <div class="row-fluid">
+                            <ul id="result_container" class="thumbnails hide">
+                            </ul>
+                            <ul id="result_template_container" class="hide">
+                                <li class="span12" data-template>
+                                	<div class="row-fluid">
+                                    <div class="span12 result-wrapper">
+                                        <div class="rounded box-shadow">
+                                            <div class="row-fluid">
+                                                <div class="span4 thumbnail">
+                                                    <h4>
+                                                        <a href="{{value}}">{{type}} : <strong>{{displayvalue}}</strong></a>
+                                                    </h4>
+                                                    <ul>
+                                                        <li class="dropdown">
+                                                            <a href="#" data-toggle="dropdown" class="dropdown-toggle">Structure</a>
+                                                            <ul class="type_structure dropdown-menu">
+                                                                <li>Stack</li>
+                                                                <li>of</li>
+                                                                <li>Types</li>
+                                                            </ul>
+                                                        </li>
+                                                        <li>{{origin_type}}</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="span8 thumbnail">
+                                                    <h4>
+                                                        Properties of Instance
+                                                    </h4>
+                                                    <div class="row-fluid">
+                                                        <div class="span5">
+                                                            <a href="#" class="thumbnail_image">
+                                                                <div class="btn btn-warning">show image</div>
+                                                             </a>
+                                                        </div>
+                                                        <div class="span7">
+                                                            <ul class="user_properties result-template pull-left">
+                                                                {{user_properties}}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    <button class="btn btn-warning toggle detail_request pull-right" data-value="{{value}}">
+                                                        More Content
+                                                    </button>
+                                                    <div class="hide">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </li>
+                                <li data-template-fallback>
+                                    Waiting.....
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    <a href="#" class="btn btn-inverse" id="expert_button" style="margin: 10px;">expert settings</a>
+                    <div class="well hide" id="expert_settings">
+						<div class="typeahead"></div>
+						<div id="sparql_editor_helper"></div>
+                        <textarea id="sparql_editor" style="width: 100%; height: 300px;">
+                            select distinct ?Concept where {[] a ?Concept} LIMIT 100
+                        </textarea>
+                        <a class="btn btn-inverse" id="query_button" href="#">Submit</a>
+                        <textarea id="json_results" style="width: 100%; height: 300px;">
+                        </textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.0/jquery-ui.js" type="text/javascript"></script>
+		<script type="text/javascript" src="js/jquery.caret.1.02.js"></script>
+        <script type="text/javascript" src="js/bootstrap.js"></script>
+        <script type="text/javascript" src="js/gui.js"></script>
+        <script type="text/javascript" src="js/ajax.js"></script>
+        <script type="text/javascript" src="js/interpret.js"></script>
+		<script type="text/javascript" src="js/peg-0.7.0.min.js"></script>
+		<script type="text/javascript" src="js/parser.js"></script>
+        <script type="text/javascript" src="js/jit.js"></script>
+        <script type="text/javascript" src="js/tree.js"></script>
+        <script type="text/javascript" src="js/tempo.min.js"></script>
+    </body>
+
+</html>

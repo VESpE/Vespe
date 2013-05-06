@@ -1,0 +1,5 @@
+select ?type {
+   
+	?type a owl:Class .
+
+}

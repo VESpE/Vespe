@@ -1,0 +1,14 @@
+SELECT ?x
+
+WHERE
+  {
+    {
+      SELECT *
+      WHERE
+        {
+          ?x rdfs:subClassOf ?y .
+        }
+    }  
+    OPTION (transitive, t_distinct, t_in (?x), t_out (?y) ).
+  FILTER (?y = <http://dbpedia.org/ontology/Person>)
+}
