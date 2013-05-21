@@ -11,6 +11,10 @@ var propcount = 1;
 var concatcount = 0;
 var returnValue = "";
 
+var baseColor = 0xdddddd;
+
+$("#treeSuper").hide();
+
 // Add keyup event listener to sparql_editor
 $('#sparql_editor').on('keyup', function() {
 	var error_found = false;
@@ -23,11 +27,15 @@ $('#sparql_editor').on('keyup', function() {
 	code = code.substr(code.lastIndexOf(" ")+1, code.length - 1);
 	var is_url = code.indexOf("<") == 0;
 	var search_string = code.substr(1, code.length);
-	if (is_url && search_string.length >= 1 && search_string.indexOf(">") === -1) {
+	if (search_string.indexOf(">") == search_string.length-1) {
+		search_string = search_string.substr(0, search_string.length - 1);
+	}
+	if (is_url && search_string.length >= 1) {
 		//request typeahead
 		var $element = $('#sparql_editor');
 		$element.attr('data-search-string', search_string);
 		updateTypeahead('sparql_editor', $element);
+		$(this).parent().find('.typeahead').stop().css('display','block');
 	}
 	try {
 		parser.parse($(this).val());
@@ -278,6 +286,9 @@ function registerPropertyButtons(element) {
 		$(this).parent().find('.typeahead').html('<div class="ajax-loader"></div>');
 		updateTypeahead('value', $(this));
 	});
+	$('#sparql_editor').on('focusout', function(){
+		$(this).parent().find('.typeahead').delay(200).fadeOut(400);
+	});
 
 	// Adding evenlistener for specify property buttons
 	$('.specify_prop_button').unbind('click').on('click', function(event){
@@ -341,7 +352,7 @@ function registerPropertyButtons(element) {
 		$(this).parent().find('.property_forms').children().last().attr('id', 'prop' + propcount);
 		propcount += 1;
 		$(this).parent().find('.property_forms').find('.concat').draggable({axis: "x", containment: "parent", scroll: false, grid: [ 20, 130 ], stop: function(){
-			updatePropertyPositions($(this).parent().find('.property_forms').children().first(), $(this).parent().find('.property_forms').children().last(), 0);	
+			updatePropertyPositions($(this).parent().children().first(), $(this).parent().children().last(), 0);	
 		}});
 		registerPropertyButtons($(this).parent().find('.property_forms'));
 	});
@@ -366,7 +377,7 @@ function registerPropertyButtons(element) {
 		$prop_container.attr('id', 'prop'+propcount).attr('data-variable', data_variable);
 		propcount += 1;
 		$(this).parent().find('.property_forms').find('.concat').draggable({axis: "x", containment: "parent", scroll: false, grid: [ 20, 130 ], stop: function(){
-			updatePropertyPositions($(this).parent().find('.property_forms').children().first(), $(this).parent().find('.property_forms').children().last(), 0);	
+			updatePropertyPositions($(this).parent().children().first(), $(this).parent().children().last(), 0);	
 		}});
 		registerPropertyButtons($(this).parent().find('.property_forms'));
 	});
@@ -384,14 +395,14 @@ function updatePropertyPositions(start, end, position){
 	var min = 10000;
 	var elements = [];
 	var thiselement = start;
-	while (thiselement.attr('id')!=end.attr('id')) {
+	while (thiselement.attr('id') !== end.attr('id')) {
 		if (thiselement.hasClass('concat')) {
 			if (thiselement.position().left < min) {
 				min = thiselement.position().left;
 				elements = [];
 				elements.push(thiselement);
 				position = parseInt(thiselement.css('left'));
-			} else if(thiselement.position().left == min){
+			} else if(thiselement.position().left === min){
 				elements.push(thiselement);
 			}
 		}
@@ -411,6 +422,13 @@ function updatePropertyPositions(start, end, position){
 		return;
 	} else {
 		start.css('left', position+'px');
+		var newColor = 0xdddddd - (position << 16) - (position << 8) - position;
+		if(newColor <= 0x6f6f6f) {
+		    start.css('color', '#f4f4f4');
+		} else {
+		    start.css('color', '#424242');
+		}
+		start.css('background-color', '#'+newColor.toString(16));
 	}
 }
 	
@@ -451,15 +469,15 @@ function updateTypeahead(id, element) {
 			break;
 			
 		case 'super':
-			sendingRequest('[{"model": "META", "source": "'+$('#source').attr('data-value')+'", "limit": 10, "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "<'+$('#starttype').attr('data-value')+'>", "t2": "rdfs:subClassOf", "t3": "?return"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}, {"model":"filter", "value":"regex(str(?label), \\"^'+element.val()+'\\", \\"i\\")", "optional": true}]', id, element);
+			sendingRequest('[{"model": "META", "source": "'+$('#source').attr('data-value')+'", "limit": 10, "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "<'+$('#starttype').attr('data-value')+'>", "t2": "rdfs:subClassOf", "t3": "?return"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}, {"model":"filter", "value":"regex(str(?label), \\"^'+element.val()+'\\", \\"i\\") || regex(str(?return), \\"^'+element.val()+'\\", \\"i\\")", "optional": true}]', id, element);
 			break;
 			
 		case 'starttype':
-			sendingRequest('[{"model": "META", "source": "'+$('#source').attr('data-value')+'", "limit": 10, "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "?return", "t2": "a", "t3": "owl:Class"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}, {"model":"filter", "value":"regex(str(?label), \\"^'+element.val()+'\\", \\"i\\")", "optional": true}]', id, element);
+			sendingRequest('[{"model": "META", "source": "'+$('#source').attr('data-value')+'", "limit": 10, "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "?return", "t2": "a", "t3": "owl:Class"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}, {"model":"filter", "value":"regex(str(?label), \\"^'+element.val()+'\\", \\"i\\") || regex(str(?return), \\"^'+element.val()+'\\", \\"i\\")", "optional": true}]', id, element);
 			break;
 			
 		case 'sub':
-			sendingRequest('[{"model": "META", "source": "'+$('#source').attr('data-value')+'", "limit": 10, "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "?return", "t2": "rdfs:subClassOf", "t3": "<'+$('#starttype').attr('data-value')+'>"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}, {"model":"filter", "value":"regex(str(?label), \\"^'+element.val()+'\\", \\"i\\")", "optional": true}]', id, element);
+			sendingRequest('[{"model": "META", "source": "'+$('#source').attr('data-value')+'", "limit": 10, "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "?return", "t2": "rdfs:subClassOf", "t3": "<'+$('#starttype').attr('data-value')+'>"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}, {"model":"filter", "value":"regex(str(?label), \\"^'+element.val()+'\\", \\"i\\") || regex(str(?return), \\"^'+element.val()+'\\", \\"i\\")", "optional": true}]', id, element);
 			break;
 			
 		case 'prop':
@@ -467,11 +485,11 @@ function updateTypeahead(id, element) {
 			if (type === undefined) {
 				type = $('#current_type').attr('data-value');
 			}
-			sendingRequest('[{"model": "META", "source": "'+$('#source').attr('data-value')+'", "limit": 10, "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label ?range"},{"model": "triple", "t1": "?starttype", "t2": "rdf:type", "t3": "<'+type+'>"},{"model": "triple", "t1": "?starttype", "t2": "?return", "t3": "?value"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}, {"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#range>", "t3": "?range", "optional": true}, {"model":"filter", "value":"regex(str(?label), \\"^'+element.val()+'\\", \\"i\\")", "optional": true}]', id, element);
+			sendingRequest('[{"model": "META", "source": "'+$('#source').attr('data-value')+'", "limit": 10, "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label ?range"},{"model": "triple", "t1": "?starttype", "t2": "rdf:type", "t3": "<'+type+'>"},{"model": "triple", "t1": "?starttype", "t2": "?return", "t3": "?value"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}, {"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#range>", "t3": "?range", "optional": true}, {"model":"filter", "value":"regex(str(?label), \\"^'+element.val()+'\\", \\"i\\") || regex(str(?return), \\"^'+element.val()+'\\", \\"i\\")", "optional": true}]', id, element);
 			break;
 		
 		case 'sparql_editor':
-			sendingRequest('[{"model": "META", "source": "'+$('#source').attr('data-value')+'", "limit": 10, "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "?return", "t2": "a", "t3": "owl:Class"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}, {"model":"filter", "value":"regex(str(?label), \\"^'+element.attr('data-search-string')+'\\", \\"i\\")", "optional": true}]', id, element);
+			sendingRequest('[{"model": "META", "source": "'+$('#source').attr('data-value')+'", "limit": 10, "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "?return", "t2": "a", "t3": "owl:Class"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}, {"model":"filter", "value":"regex(str(?label), \\"^'+element.attr('data-search-string')+'\\", \\"i\\") || regex(str(?return), \\"^'+element.attr('data-search-string')+'\\", \\"i\\")", "optional": true}]', id, element);
 			break;
 			
 		case 'value':

@@ -1,10 +1,12 @@
 function interpretResults(globalProps, globalTypes, resultJSON) {
 	
-	var origintypestring= '<a target="_blank" href="' + globalTypes['0']['value'] + '">' + globalTypes['0']['label'] + '</a>';
+	if (globalTypes !== undefined && '0' in globalTypes) {
+		var origintypestring= '<a target="_blank" href="' + globalTypes['0']['value'] + '">' + globalTypes['0']['label'] + '</a>';
+	}
 	var new_json_obj = [];
 	for (var i=0; i<resultJSON.length; i++) {
 		var userProperties = "";
-		if(globalProps.length < 1){
+		if(globalProps === undefined || globalProps.length < 1){
 			userProperties = "No specific properties chosen.";
 		} 
 		else {
@@ -28,8 +30,10 @@ function interpretResults(globalProps, globalTypes, resultJSON) {
 	Tempo.prepare("result_container").render(new_json_obj);
 	$('#result_container').css('display','block');
 	var typeliststring = '';
-	for (i=0; i<globalTypes.length; i++) {
-		typeliststring += '<li>'+globalTypes[i]['label']+'</li>';
+	if (globalTypes !== undefined) {
+		for (i=0; i<globalTypes.length; i++) {
+			typeliststring += '<li>'+globalTypes[i]['label']+'</li>';
+		}
 	}
 	$('.type_structure').html(typeliststring);
 	$('.detail_request').on('click', function(event){

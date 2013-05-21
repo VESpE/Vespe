@@ -1,14 +1,12 @@
 var labelType, useGradients, nativeTextSupport, animate;
 var url = "lod_api.php";
 
-
-
 (function() {
   var ua = navigator.userAgent,
       iStuff = ua.match(/iPhone/i) || ua.match(/iPad/i),
       typeOfCanvas = typeof HTMLCanvasElement,
       nativeCanvasSupport = (typeOfCanvas == 'object' || typeOfCanvas == 'function'),
-      textSupport = nativeCanvasSupport 
+      textSupport = nativeCanvasSupport
         && (typeof document.createElement('canvas').getContext('2d').fillText == 'function');
   //I'm setting this based on the fact that ExCanvas provides text support for IE
   //and that as of today iPhone/iPad current text support is lame
@@ -18,13 +16,38 @@ var url = "lod_api.php";
   animate = !(iStuff || !nativeCanvasSupport);
 })();
 
+var initParams = null;
+var isSuper = false;
 
-function init(initPew){
-    $('#infovis').html("");   
+function showSubTree() {
+    if(initParams) {
+        isSuper = false;
+        init(initParams, false);
+    }
+}
 
-    var makeRequst = function (startType, limit, callback) {
+function showSuperTree() {
+    if(initParams) {
+        isSuper = true;
+        init(initParams, true);
+    }
+}
+
+
+function init(initPew, useSuper) {
+    if(isSuper) {
+        useSuper = true;
+    }
+    initParams = initPew;
+    $('#infovis').html("");
+
+    var makeRequst = function (startType, limit, callback, useSuper) {
 		var source = $('#source').attr('data-value');
-        var query = '[{"model": "META", "source": "'+source+'", "limit": ' + limit + ', "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "?return", "t2": "rdfs:subClassOf", "t3": "<' + startType + '>"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label", "optional": true}]';
+        if(useSuper) {
+            var query = '[{"model": "META", "source": "'+source+'", "limit": ' + limit + ', "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "<' + startType + '>", "t2": "rdfs:subClassOf", "t3": "?return"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label"}]';
+        } else {
+            var query = '[{"model": "META", "source": "'+source+'", "limit": ' + limit + ', "order_by": "ASC (str(?label))", "group_by": "?return", "return": "DISTINCT ?return ?label"},{"model": "triple", "t1": "?return", "t2": "rdfs:subClassOf", "t3": "<' + startType + '>"},{"model": "triple", "t1": "?return", "t2": "<http://www.w3.org/2000/01/rdf-schema#label>", "t3": "?label"}]';
+        }
         $.ajax({
             url: url,
             type: "POST",
@@ -39,50 +62,90 @@ function init(initPew){
     //A client-side tree generator
     var getTree = (function() {
         var i = 0;
-       
+
         return function(nodeId, level, callback) {
-             var sparqlClass;
-            if(nodeId.lastIndexOf('#') >= 0){
-               sparqlClass = nodeId.substring(0,nodeId.lastIndexOf('#'))} 
-                else {
-                   sparqlClass = nodeId}
+            var sparqlClass;
+            if(nodeId.lastIndexOf('#') >= 0) {
+                sparqlClass = nodeId.substring(0,nodeId.lastIndexOf('#'))
+            } else {
+                sparqlClass = nodeId
+            }
 
-          makeRequst(sparqlClass, '25', function (data) {
-	    var subtree = [];
+            makeRequst(sparqlClass, '25', function (data) {
+                var subtree = [];
+                if(data.results == null || data.results.bindings.length === 0) {
+                    var obj = {'id': 'vespeDummyNode#'+i+Math.random() , 'children':[], 'data' :{}, 'name' : 'No more data'};
+                    subtree.push(obj);
+                } else {
+                    for(var j = 0; j < data.results.bindings.length; j++) {
+                        var obj = { 'id': data.results.bindings[j].return.value + '#' + i,
+                            'children': [],
+                            'data': {'uri': data.results.bindings[j]['return'].value},
+                            'name': data.results.bindings[j].label.value
+                        }
+                        subtree.push(obj);
+                    }
+                    i++;
+                }
 
-if(data.results == null || data.results.bindings.length === 0){
-  var obj = {'id': 'vespeDummyNode#'+i+Math.random() , 'children':[], 'data' :{}, 'name' : 'No Subtype'};
-  subtree.push(obj);
-} else {
-
-
-
-	    for(var j = 0; j < data.results.bindings.length; j++) {
-		var obj = { 'id': data.results.bindings[j].return.value + '#' + i,
-			'children': [],
-			'data': {'uri': data.results.bindings[j]['return'].value},
-			'name': data.results.bindings[j].label.value
-		}
-		subtree.push(obj);
-	    }
-	    i++;
-}
-	    
-	    var newTree = {
-		'id': nodeId,
-		'children': subtree	
-	    };
-	    var lastIndex = nodeId.lastIndexOf('#');
-	    var substr = nodeId.substring(0, lastIndex);
-	    if(substr === "vespeDummyNode") {
-	  	callback.onComplete();
-		return;
-	     }
-	     callback.onComplete(nodeId, newTree);	
-          });
+                var newTree = {
+                    'id': nodeId,
+                    'children': subtree
+                };
+                var lastIndex = nodeId.lastIndexOf('#');
+                var substr = nodeId.substring(0, lastIndex);
+                if(substr === "vespeDummyNode") {
+                    callback.onComplete();
+                    return;
+                }
+                callback.onComplete(nodeId, newTree);
+            });
         };
     })();
     
+    var getSuperTree = (function() {
+        var i = 0;
+
+        return function(nodeId, level, callback) {
+            var sparqlClass;
+            if(nodeId.lastIndexOf('#') >= 0) {
+                sparqlClass = nodeId.substring(0,nodeId.lastIndexOf('#'))
+            } else {
+                sparqlClass = nodeId
+            }
+
+            makeRequst(sparqlClass, '25', function (data) {
+                var subtree = [];
+                if(data.results == null || data.results.bindings.length === 0) {
+                    var obj = {'id': 'vespeDummyNode#'+i+Math.random() , 'children':[], 'data' :{}, 'name' : 'No more data'};
+                    subtree.push(obj);
+                } else {
+                    for(var j = 0; j < data.results.bindings.length; j++) {
+                        var obj = { 'id': data.results.bindings[j].return.value + '#' + i,
+                            'children': [],
+                            'data': {'uri': data.results.bindings[j]['return'].value},
+                            'name': data.results.bindings[j].label.value
+                        }
+                        subtree.push(obj);
+                    }
+                    i++;
+                }
+
+                var newTree = {
+                    'id': nodeId,
+                    'children': subtree
+                };
+                var lastIndex = nodeId.lastIndexOf('#');
+                var substr = nodeId.substring(0, lastIndex);
+                if(substr === "vespeDummyNode") {
+                    callback.onComplete();
+                    return;
+                }
+                callback.onComplete(nodeId, newTree);
+            }, true);
+        };
+    })();
+
     //Implement a node rendering function called 'nodeline' that plots a straight line
     //when contracting or expanding a subtree.
     $jit.ST.Plot.NodeTypes.implement({
@@ -102,10 +165,10 @@ if(data.results == null || data.results.bindings.length === 0){
                       ctx.lineTo(algnPos.x + width / 2, algnPos.y + height);
                   }
                   ctx.stroke();
-              } 
+              }
           }
         }
-          
+
     });
 
     //init Spacetree
@@ -135,15 +198,15 @@ if(data.results == null || data.results.bindings.length === 0){
             align:"center",
             overridable: true
         },
-        
+
         Edge: {
             type: 'bezier',
             lineWidth: 2,
             color:'#AABBCC',
             overridable: true
         },
-        
-        //Add a request method for requesting on-demand json trees. 
+
+        //Add a request method for requesting on-demand json trees.
         //This method gets called when a node
         //is clicked and its subtree has a smaller depth
         //than the one specified by the levelsToShow parameter.
@@ -152,22 +215,26 @@ if(data.results == null || data.results.bindings.length === 0){
         //subtree and then handle it to the onComplete callback.
         //Here we just use a client-side tree generator (the getTree function).
         request: function(nodeId, level, onComplete) {
-          getTree(nodeId, level, onComplete);
+            if(useSuper) {
+                getSuperTree(nodeId, level, onComplete);
+            } else {
+                getTree(nodeId, level, onComplete);
+            }
           //var subTree = makeRequst
           //onComplete.onComplete(nodeId, ans);
         },
-        
+
         onBeforeCompute: function(node){
         },
-        
+
         onAfterCompute: function(){
         },
-        
+
         //This method is called on DOM label creation.
         //Use this method to add event handlers and styles to
         //your node.
         onCreateLabel: function(label, node){
-            label.id = node.id;            
+            label.id = node.id;
             label.innerHTML =node.name;
             var lastIndex = node.id.lastIndexOf('#');
 	    var substr = node.id.substring(0, lastIndex);
@@ -176,13 +243,13 @@ if(data.results == null || data.results.bindings.length === 0){
                 st.onClick(node.id);
 
                 //update Shit
-            //set stuff          
-            var htmlString = '<a href="'+label.id+'">'+node.name+'</a>';     
+            //set stuff
+            var htmlString = '<a href="'+label.id+'">'+node.name+'</a>';
             $("#current_type").html(htmlString);
 
                          var sparqlClass;
             if(node.id.lastIndexOf('#') >= 0){
-               sparqlClass = node.id.substring(0,node.id.lastIndexOf('#'))} 
+               sparqlClass = node.id.substring(0,node.id.lastIndexOf('#'))}
                 else {
                    sparqlClass = node.id}
             		$("#current_type").attr('data-value', sparqlClass);
@@ -190,7 +257,7 @@ if(data.results == null || data.results.bindings.length === 0){
             	};
 	    }
             //set label styles
-            var style = label.style;         
+            var style = label.style;
             style.cursor = 'pointer';
             style.color = '#010101';
             style.fontSize = '0.8em';
@@ -198,7 +265,7 @@ if(data.results == null || data.results.bindings.length === 0){
             style.paddingTop = '3px';
 
         },
-        
+
         //This method is called right before plotting
         //a node. It's useful for changing an individual node
         //style properties before plotting it.
@@ -214,7 +281,7 @@ if(data.results == null || data.results.bindings.length === 0){
                 delete node.data.$color;
             }
         },
-        
+
         //This method is called right before plotting
         //an edge. It's useful for changing an individual edge
         //style properties before plotting it.
@@ -236,26 +303,42 @@ if(data.results == null || data.results.bindings.length === 0){
     var startJson = { 'id': initPew.id, 'name':initPew.name, 'data':{}, 'children':[] };
     var htmlString = '<a href="'+initPew.id+'">'+initPew.name+'</a>';
     $("#current_type").attr('data-value', initPew.id).html(htmlString);
-  
 
-  
+
+
     //var startJson = { 'id': 'http://dbpedia.org/ontology/Person#-', 'name': 'Person', 'data': {}, 'children': []  };
     st.loadJSON(startJson);
     //compute node positions and layout
     st.compute();
     //emulate a click on the root node.
+    var oldClick = st.onClick;
+    st.onClick = function (id, options) {
+        var lastIndex = id.lastIndexOf('#');
+        if(lastIndex >= 0) {
+            var urlString = id.substring(0, lastIndex);
+            var urlLastIndex = urlString.lastIndexOf('/') + 1;
+            var sparqlTypeName = urlString.substr(urlLastIndex);
+            initParams = {"id": urlString, "name": sparqlTypeName};
+        } else {
+            var urlLastIndex = id.lastIndexOf('/') + 1;
+            var sparqlTypeName = id.substr(urlLastIndex);
+            initParams = {"id": id, "name": sparqlTypeName}; 
+        }
+        oldClick.apply(st, [id, options]);
+    };
     st.onClick(st.root);
     //end
+    
     //Add event handlers to switch spacetree orientation.
    function get(id) {
-      return document.getElementById(id);  
+      return document.getElementById(id);
     };
 
-    var top = get('r-top'), 
-    left = get('r-left'), 
-    bottom = get('r-bottom'), 
+    var top = get('r-top'),
+    left = get('r-left'),
+    bottom = get('r-bottom'),
     right = get('r-right');
-    
+
     function changeHandler() {
         if(this.checked) {
             top.disabled = bottom.disabled = right.disabled = left.disabled = true;
@@ -266,7 +349,7 @@ if(data.results == null || data.results.bindings.length === 0){
             });
         }
     };
-    
+
     //top.onchange = left.onchange = bottom.onchange = right.onchange = changeHandler;
     //end
 

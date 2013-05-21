@@ -7,7 +7,9 @@ function sendingRequest(jsonString, id, element) {
 		dataType: "json",
 		async: true
 	}).done(function(data) {
-		$('#sparql_editor').val(data['query']);
+		if (id != "sparql_editor") {
+			$('#sparql_editor').val(data['query']);
+		}
 		$('#json_results').val(JSON.stringify(data));
 		var target = id;
 		// modify target elements for super and sub (should modify starttype instead)
@@ -80,7 +82,7 @@ function sendingRequest(jsonString, id, element) {
 			}
 			htmlstring += '</ul>';
 			element.parent().find('.typeahead').html(htmlstring);
-			// register eventlistener for typehead
+			// register click eventlistener for typehead items
 			$('.typeahead_choice').on('click', function(event){
 				event.preventDefault();
 				updateValue($(this).attr('data-tooltip'), $(this).html(), $(this).attr('data-type'), $(this).parent().parent().parent().parent().find('input'));
@@ -90,6 +92,9 @@ function sendingRequest(jsonString, id, element) {
 						$(this).closest('.prop_wrapper').find('.add_specify_prop_button').remove();
 					}
 					$(this).parent().parent().parent().parent().find('input').attr('data-type-range', $(this).attr('data-range'));
+				}
+				if (id == 'sparql_editor') {
+					update_sparql_editor_value($(this));
 				}
 			});
 			$(".has-tooltip a[rel=tooltip]").hover(function(){
@@ -101,6 +106,23 @@ function sendingRequest(jsonString, id, element) {
 	});
 }
 
+function update_sparql_editor_value(element) {
+	var position = $('#sparql_editor').caret().start;
+	var data_value = element.attr('data-tooltip');
+	if (data_value !== undefined) {
+		element.addClass('has_tooltip');
+	} else {
+		data_value = element.val();
+	}
+	var first_part_of_string = $('#sparql_editor').val().substr(0, position);
+		first_part_of_string = first_part_of_string.substr(0, first_part_of_string.lastIndexOf("<")+1);
+	var second_part_of_string = $('#sparql_editor').val().substr(position, $('#sparql_editor').val().length);
+		second_part_of_string = second_part_of_string.substr(second_part_of_string.indexOf(">"), second_part_of_string.length)
+	var code = first_part_of_string;
+		code = code + data_value;
+		code = code + second_part_of_string;
+	$('#sparql_editor').val(code);
+}
 
 function submitQuery() {
 	var url ='lod_api.php';

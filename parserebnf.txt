@@ -14,12 +14,12 @@ WhereClause
   = ("WHERE"/"where")? GroupGraphPattern
 
 SolutionModifier
-  = OrderClause? WS* LimitOffsetClauses? WS*
+  = WS* GroupClause? WS* OrderClause? WS* LimitOffsetClauses? WS*
 
 VAR1
   = "?" VARNAME
 VAR2
-  = "?" VARNAME
+  = "$" VARNAME
 
 DefaultGraphClause
   = SourceSelector
@@ -28,19 +28,22 @@ NamedGraphClause
   = "NAMED" SourceSelector
 
 GroupGraphPattern
-  = WS* "{" WS* TriplesBlock? ( ( GraphPatternNotTriples / Filter ) WS* "x" "."? WS* TriplesBlock? WS* )* "}"
+  = WS* "{" WS* TriplesBlock? ( ( GraphPatternNotTriples / Filter ) WS* "."? WS* TriplesBlock? WS* )* "}"
 
 TriplesBlock
   = TriplesSameSubject WS* ( "." WS* TriplesBlock? )? WS*
 
+GroupClause
+  = ("GROUP" WS "BY" / "group" WS "by") WS* Var
+
 OrderClause
-  = ("ORDER" WS "BY" / "order" WS "by") OrderCondition+
+  = ("ORDER" WS "BY" / "order" WS "by") WS* OrderCondition+
 
 OrderCondition
-  = ( ( "ASC" / "DESC" / "asc" / "desc" ) BrackettedExpression ) / ( Constraint / Var )
+  = ( ( "ASC" / "DESC" / "asc" / "desc" ) WS* BrackettedExpression )
 
 LimitOffsetClauses
-  = ( LimitClause OffsetClause? / OffsetClause LimitClause? )
+  = ( LimitClause WS* OffsetClause? WS* / OffsetClause WS* LimitClause? WS*)
 
 SourceSelector
   = IRIref
@@ -83,7 +86,7 @@ GraphGraphPattern
   = ("GRAPH"/"graph") VarOrIRIref GroupGraphPattern
 
 BuiltInCall
-  = "STR" "(" Expression ")" 
+  = "str" "(" Expression ")" 
     / "LANG" "(" Expression ")" 
     / "LANGMATCHES" "(" Expression "," Expression ")" 
     / "DATATYPE" "(" Expression ")" 
@@ -114,8 +117,10 @@ Expression
   = ConditionalOrExpression
 
 ConditionalOrExpression
-  = ConditionalAndExpression ( "//" ConditionalAndExpression )*
-ConditionalAndExpression = ValueLogical ( "&&" ValueLogical )*
+  = ConditionalAndExpression ( WS* "||"  WS* ConditionalAndExpression )*
+
+ConditionalAndExpression 
+  = ValueLogical ( "&&" ValueLogical )*
 
 INTEGER
   = [0-9]+
@@ -130,7 +135,7 @@ VarOrIRIref
   = Var / IRIref
 
 RegexExpression
-  =  ("REGEX"/"regex") "(" Var WS* ("," WS? '"' PN_CHARS_BASE* '"' WS*)+ ")"
+  = ("REGEX"/ "regex") '(' Expression',' WS* Expression WS* ( ',' WS* Expression WS*)? WS* ')'
 
 ArgList
   = ( NIL / "(" Expression ( "," Expression )* ")" )
@@ -141,7 +146,7 @@ GraphTerm
 Verb
   = VarOrIRIref / "a"
 
-ObjectList
+ObjectList 
   = Object ( "," Object )*
 
 Object
@@ -274,7 +279,7 @@ WS
   = [" " / "\n" / "\t" / "\r"]
 
 PN_CHARS_BASE
-  =  [A-Z] / [a-z]  / ":" / "/" / "." / "%" / "&" / "$"
+  =  [A-Z] / [a-z] / [0-9] / '^' / '|' / '#'/ '-' / ":" / "/" / "." / "%" / "&" / "$"
 
 PN_CHARS
   = PN_CHARS_U / '-' / [0-9] / [u00B7] / [u0300-u036F] / [u203F-u2040]
@@ -283,4 +288,4 @@ IRI_REF
   = '<' PN_CHARS_BASE+ '>'
 
 VARNAME
-  = ( PN_CHARS_U / [0-9] ) ( PN_CHARS_U / [0-9] / [u00B7] / [u0300-u036F] / [u203F-u2040] )*
+  = ( PN_CHARS_U / [0-9] ) ( PN_CHARS_U / [0-9] / [u00B7] /  [u0300-u036F] / [u203F-u2040] )*
